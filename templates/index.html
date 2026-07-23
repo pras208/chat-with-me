@@ -2,24 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bedrock Prompt Demo</title>
+    <title>Bedrock Chat Demo</title>
     <style>
-        body {font-family: Arial, sans-serif; margin: 2rem;}
-        textarea {width: 100%; height: 120px;}
-        #response {margin-top: 1rem; white-space: pre-wrap; background:#f9f9f9; padding:1rem; border:1px solid #ddd;}
+        body {font-family: Arial, sans-serif; margin: 2rem; background:#fafafa;}
+        #chat {border:1px solid #ccc; padding:1rem; max-width:600px; margin:auto; background:#fff;}
+        #messages {max-height:400px; overflow-y:auto; margin-bottom:1rem;}
+        .msg {padding:0.5rem 0.8rem; margin:0.3rem 0; border-radius:8px; max-width:80%;}
+        .user {background:#d1e7dd; align-self:flex-end;}
+        .assistant {background:#f8d7da; align-self:flex-start;}
+        #inputArea {display:flex; gap:0.5rem;}
+        #prompt {flex:1; padding:0.5rem;}
+        #sendBtn {padding:0.5rem 1rem;}
     </style>
 </head>
 <body>
-    <h1>Ask Amazon Bedrock</h1>
-    <textarea id="prompt" placeholder="Enter your prompt here..."></textarea><br/>
-    <button id="sendBtn">Send</button>
-    <div id="response"></div>
-
+    <h1 style="text-align:center;">Amazon Bedrock Chat</h1>
+    <div id="chat">
+        <div id="messages" style="display:flex; flex-direction:column;"></div>
+        <div id="inputArea">
+            <input type="text" id="prompt" placeholder="Enter your prompt..." />
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
     <script>
+        const messagesDiv = document.getElementById('messages');
+        const addMessage = (text, cls) => {
+            const msg = document.createElement('div');
+            msg.className = 'msg ' + cls;
+            msg.textContent = text;
+            messagesDiv.appendChild(msg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        };
         document.getElementById('sendBtn').addEventListener('click', async () => {
-            const prompt = document.getElementById('prompt').value;
-            const respDiv = document.getElementById('response');
-            respDiv.textContent = 'Waiting for response...';
+            const promptInput = document.getElementById('prompt');
+            const prompt = promptInput.value.trim();
+            if (!prompt) return;
+            addMessage(prompt, 'user');
+            promptInput.value = '';
+            addMessage('Thinking...', 'assistant');
             try {
                 const res = await fetch('/invoke', {
                     method: 'POST',
@@ -27,13 +47,18 @@
                     body: JSON.stringify({prompt})
                 });
                 const data = await res.json();
+                // Remove the placeholder "Thinking..." message
+                const placeholders = document.querySelectorAll('.assistant');
+                if (placeholders.length) placeholders[placeholders.length-1].remove();
                 if (res.ok) {
-                    respDiv.textContent = data.response || JSON.stringify(data);
+                    addMessage(data.response || JSON.stringify(data), 'assistant');
                 } else {
-                    respDiv.textContent = 'Error: ' + (data.error || 'unknown');
+                    addMessage('Error: ' + (data.error || 'unknown'), 'assistant');
                 }
             } catch (e) {
-                respDiv.textContent = 'Fetch error: ' + e;
+                const placeholders = document.querySelectorAll('.assistant');
+                if (placeholders.length) placeholders[placeholders.length-1].remove();
+                addMessage('Fetch error: ' + e, 'assistant');
             }
         });
     </script>
