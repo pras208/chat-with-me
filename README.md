@@ -58,6 +58,3 @@ The server will start on `http://0.0.0.0:5000`. Open a browser and navigate to t
 - The payload format shown works for Claude‑style models. For other models you may need to adjust the JSON structure according to the model's API contract.
 - In production, disable Flask's debug mode and consider adding proper error handling, logging, and HTTPS.
 - The `.gitignore` file excludes `config.yaml` and other sensitive files from version control.
-
-## License
-This example is provided for educational purposes and is not intended for production use without proper security reviews.
