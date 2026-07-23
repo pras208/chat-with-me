@@ -17,7 +17,7 @@ bedrock-flask-demo/
 ## Prerequisites
 - Python 3.9+ installed
 - AWS credentials configured (either default or a named profile). If you use a named profile, set its name in `config.yaml` under `aws.profile`.
-- An Amazon Bedrock model ID you have access to (e.g., `anthropic.claude-v2`).
+- An Amazon Bedrock model ID you have access to (e.g., `amazon.nova-pro-v1:0`).
 
 ## Setup
 ```bash
@@ -39,7 +39,7 @@ Edit **config.yaml** to match your environment:
 aws:
   region: us-east-1          # AWS region where Bedrock is enabled
   profile: my-profile        # (optional) name of the profile in ~/.aws/credentials
-  model_id: anthropic.claude-v2   # Bedrock model identifier
+  model_id: amazon.nova-pro-v1:0   # Bedrock model identifier
 ```
 If you omit `profile`, the default AWS credentials chain will be used.
 

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bedrock Prompt Demo</title>
+    <style>
+        body {font-family: Arial, sans-serif; margin: 2rem;}
+        textarea {width: 100%; height: 120px;}
+        #response {margin-top: 1rem; white-space: pre-wrap; background:#f9f9f9; padding:1rem; border:1px solid #ddd;}
+    </style>
+</head>
+<body>
+    <h1>Ask Amazon Bedrock</h1>
+    <textarea id="prompt" placeholder="Enter your prompt here..."></textarea><br/>
+    <button id="sendBtn">Send</button>
+    <div id="response"></div>
+
+    <script>
+        document.getElementById('sendBtn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt').value;
+            const respDiv = document.getElementById('response');
+            respDiv.textContent = 'Waiting for response...';
+            try {
+                const res = await fetch('/invoke', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({prompt})
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    respDiv.textContent = data.response || JSON.stringify(data);
+                } else {
+                    respDiv.textContent = 'Error: ' + (data.error || 'unknown');
+                }
+            } catch (e) {
+                respDiv.textContent = 'Fetch error: ' + e;
+            }
+        });
+    </script>
+</body>
+</html>
