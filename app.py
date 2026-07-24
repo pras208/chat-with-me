@@ -12,7 +12,7 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s',
     handlers=[
         logging.FileHandler('debug.log'),
-        logging.StreamHandler()
+        # logging.StreamHandler()
     ]
 )
 
@@ -58,7 +58,6 @@ def invoke_model():
             }
         ],
         "inferenceConfig": {
-            #"maxTokenCount": 512,
             "temperature": 0.7,
             "topP": 0.9
         }
