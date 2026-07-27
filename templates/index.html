@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Bedrock Chat Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body {font-family: Arial, sans-serif; margin: 2rem; background:#fafafa;}
         #chat {border:1px solid #ccc; padding:1rem; max-width:600px; margin:auto; background:#fff;}
@@ -13,6 +14,20 @@
         #inputArea {display:flex; gap:0.5rem;}
         #prompt {flex:1; padding:0.5rem;}
         #sendBtn {padding:0.5rem 1rem;}
+        /* Markdown styling */
+        .msg h1, .msg h2, .msg h3, .msg h4, .msg h5, .msg h6 { margin: 0.5rem 0; }
+        .msg h1 { font-size: 1.5rem; }
+        .msg h2 { font-size: 1.3rem; }
+        .msg h3 { font-size: 1.1rem; }
+        .msg p { margin: 0.3rem 0; }
+        .msg ul, .msg ol { margin: 0.3rem 0; padding-left: 1.5rem; }
+        .msg code { background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 3px; font-family: monospace; }
+        .msg pre { background: #f0f0f0; padding: 0.5rem; border-radius: 5px; overflow-x: auto; }
+        .msg pre code { background: none; padding: 0; }
+        .msg table { border-collapse: collapse; width: 100%; margin: 0.5rem 0; }
+        .msg th, .msg td { border: 1px solid #ccc; padding: 0.4rem 0.6rem; text-align: left; }
+        .msg th { background: #f0f0f0; font-weight: bold; }
+        .msg blockquote { border-left: 3px solid #ccc; padding-left: 0.8rem; margin: 0.5rem 0; color: #666; }
     </style>
 </head>
 <body>
@@ -29,11 +44,11 @@
         const addMessage = (text, cls) => {
             const msg = document.createElement('div');
             msg.className = 'msg ' + cls;
-            msg.textContent = text;
+            msg.innerHTML = marked.parse(text);
             messagesDiv.appendChild(msg);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         };
-        document.getElementById('sendBtn').addEventListener('click', async () => {
+        const sendMessage = async () => {
             const promptInput = document.getElementById('prompt');
             const prompt = promptInput.value.trim();
             if (!prompt) return;
@@ -59,6 +74,13 @@
                 const placeholders = document.querySelectorAll('.assistant');
                 if (placeholders.length) placeholders[placeholders.length-1].remove();
                 addMessage('Fetch error: ' + e, 'assistant');
+            }
+        };
+
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('prompt').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
             }
         });
     </script>
