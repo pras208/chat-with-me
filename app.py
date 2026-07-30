@@ -72,11 +72,6 @@ def invoke_model():
         )
         response_body = json.loads(response['body'].read())
         logging.info(f"Bedrock response: {response_body}")
-        # Extract the text from the response for models that return a nested structure
-        # Example response format:
-        # {
-        #   "output": {"message": {"content": [{"text": "..."}], "role": "assistant"}}
-        # }
         text_response = None
         if isinstance(response_body, dict):
             # Try the nested path used by Amazon Nova model
