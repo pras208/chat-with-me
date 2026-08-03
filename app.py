@@ -23,6 +23,7 @@ with open('config.yaml', 'r') as cfg_file:
 region = cfg.get('region')
 profile = cfg.get('profile')
 model_id = cfg.get('model_id')
+inference_config = cfg.get('inference_config', {})
 
 # Create a boto3 session respecting the optional profile
 session_kwargs = {}
@@ -45,43 +46,37 @@ def invoke_model():
         logging.warning('Prompt missing in request')
         return jsonify({'error': 'Prompt is required'}), 400
 
-    # Prepare payload for the Bedrock model (example for Claude style models)
-    payload = {
-        "messages": [
-            {
-            "role": "user",
-            "content": [
-                {
-                "text": prompt
-                }
-            ]
-            }
-        ],
-        "inferenceConfig": {
-            "temperature": 0.7,
-            "topP": 0.9
-        }
+    # Build inference configuration with defaults and config overrides
+    inference_params = {
+        "temperature": inference_config.get('temperature', 0.7),
+        "topP": inference_config.get('topP', 0.9)
     }
+    
+    # Add maxTokens if specified
+    if 'maxTokens' in inference_config:
+        inference_params['maxTokens'] = inference_config['maxTokens']
+    
+    # Add stopSequences if specified
+    if 'stopSequences' in inference_config:
+        inference_params['stopSequences'] = inference_config['stopSequences']
 
     try:
-        response = bedrock_client.invoke_model(
+        # Use the Converse API - unified interface across all Bedrock models
+        response = bedrock_client.converse(
             modelId=model_id,
-            body=json.dumps(payload).encode('utf-8'),
-            contentType='application/json'
+            messages=[
+                {
+                    "role": "user",
+                    "content": [{"text": prompt}]
+                }
+            ],
+            inferenceConfig=inference_params
         )
-        response_body = json.loads(response['body'].read())
-        logging.info(f"Bedrock response: {response_body}")
-        text_response = None
-        if isinstance(response_body, dict):
-            # Try the nested path used by Amazon Nova model
-            try:
-                text_response = response_body['output']['message']['content'][0]['text']
-            except Exception:
-                # Fallback to other possible keys
-                text_response = response_body.get('completion') or response_body.get('output')
-        else:
-            text_response = response_body
-        logging.info(f"Returning extracted text: {text_response}")
+        
+        # Extract response text using the standard Converse API structure
+        text_response = response['output']['message']['content'][0]['text']
+        logging.info(f"Bedrock response: {text_response}")
+        
         return jsonify({'response': text_response})
     except Exception as e:
         logging.error(f"Error invoking model: {e}")
